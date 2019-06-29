@@ -1,0 +1,37 @@
+version: '2'
+services:
+  letsencrypt:
+    image: linuxserver/letsencrypt
+    container_name: letsencrypt
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Americas/Los Angeles
+      - URL=x0r.net
+      - SUBDOMAINS=mail
+      - VALIDATION=http
+      - EMAIL=gee@x0r.net
+    volumes:
+      - ./mail.x0r.net.nginx.conf:/config/nginx/site-confs/default
+      - ./letsencrypt/:/config/etc/letsencrypt/
+    ports:
+      - 443:443
+      - 80:80
+    restart: unless-stopped
+    depends_on:
+      - rainloop
+  mail:
+    volumes:
+      - ./letsencrypt/:/etc/letsencrypt/
+  rainloop:
+    image: hardware/rainloop
+    container_name: rainloop
+    ports:
+      - "8888:8888"
+    volumes:
+      - /mnt/docker/rainloop:/rainloop/data
+    depends_on:
+      - mail
+
